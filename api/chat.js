@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     // MODEL ID ĐÃ ĐƯỢC FIX CỨNG THEO YÊU CẦU: gemini-3.1-flash-lite-preview
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
 
-    const systemInstruction = `
+    const systemPrompt = `
     Your name is "Oleksandra's Assistant". 
     Role: Professional Healthcare Mentor & Nursing Expert for a Ukrainian nursing student in Ottawa, Canada.
     Tone: Calm, Empathetic, Academic yet supportive (Big Sister energy).
