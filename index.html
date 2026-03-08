@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oleksandra's Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { background: #f0f4f8; color: #1a365d; font-family: 'Inter', sans-serif; }
+        .medical-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(0, 128, 128, 0.1); }
+        .typing::after { content: '...'; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center p-4">
+
+    <div class="medical-glass w-full max-w-2xl h-[750px] rounded-3xl overflow-hidden shadow-2xl flex flex-col border-t-8 border-[#008b8b]">
+        <div class="bg-white p-6 flex items-center justify-between border-b border-gray-100">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-[#008b8b]/10 rounded-full flex items-center justify-center text-[#008b8b]">
+                    <i data-lucide="stethoscope" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-[#1a365d]">Oleksandra's Assistant</h1>
+                    <p class="text-[11px] text-[#008b8b] uppercase tracking-widest font-bold">Healthcare & Nursing Mentor</p>
+                </div>
+            </div>
+            <div class="text-right hidden sm:block text-gray-400 text-[10px] font-medium">
+                <p>Ottawa, ON</p>
+                
+            </div>
+        </div>
+
+        <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-6 text-[15px]">
+            <div class="bg-[#008b8b]/5 border border-[#008b8b]/10 rounded-2xl p-5 text-[#1a365d] shadow-sm">
+                Привіт, Oleksandra! 💙💛 I am your personal assistant. I can help you with <strong>Medical terminology, NCLEX prep, Canadian healthcare laws</strong>, or your shift schedules in Ottawa. How can I support your nursing journey today?
+            </div>
+        </div>
+
+        <div class="p-6 bg-white border-t border-gray-100 flex gap-3">
+            <input id="chat-input" type="text" placeholder="Ask me anything ..." 
+                class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 text-gray-700 focus:outline-none focus:border-[#008b8b] focus:ring-1 focus:ring-[#008b8b] transition-all">
+            <button onclick="sendMessage()" class="bg-[#008b8b] px-8 rounded-xl text-white font-bold hover:bg-[#007070] active:scale-95 shadow-lg shadow-[#008b8b]/20 transition-all uppercase tracking-wider">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const input = document.getElementById("chat-input");
+        const chatBox = document.getElementById("chat-messages");
+
+        async function sendMessage() {
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            // User Message
+            chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-[#1a365d] text-white p-4 rounded-2xl rounded-tr-none max-w-[85%] shadow-md">${msg}</div></div>`;
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Loading
+            const loadingId = "loading-" + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="flex justify-start"><div class="bg-gray-100 p-4 rounded-2xl rounded-tl-none italic text-gray-500">Checking medical databases<span class="typing"></span></div></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                document.getElementById(loadingId).remove();
+
+                // AI Response
+                chatBox.innerHTML += `<div class="flex justify-start animate-in slide-in-from-left duration-300"><div class="bg-white border border-gray-200 p-5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-700 shadow-sm leading-relaxed">${data.reply}</div></div>`;
+            } catch (e) {
+                if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `<div class="text-red-500 text-center text-xs">Error connecting to the medical server.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+    </script>
+</body>
+</html>
