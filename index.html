@@ -7,42 +7,64 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background: #f0f4f8; color: #1a365d; font-family: 'Inter', sans-serif; }
-        .medical-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(0, 128, 128, 0.1); }
+        body { background: #f0f4f8; color: #1a365d; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .medical-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(0, 128, 128, 0.1); width: 100%; max-width: 600px; height: 95vh; display: flex; flex-direction: column; }
         .typing::after { content: '...'; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+        
+        /* Custom scrollbar y tế sạch sẽ */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #008b8b; border-radius: 10px; }
+
+        /* Gemini-style Textarea */
+        #chat-input {
+            resize: none;
+            min-height: 52px;
+            max-height: 180px;
+            scrollbar-width: none;
+        }
+        #chat-input::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 640px) {
+            .medical-glass { height: 100vh; border-radius: 0; }
+        }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4">
+<body class="p-0 sm:p-4">
 
-    <div class="medical-glass w-full max-w-2xl h-[750px] rounded-3xl overflow-hidden shadow-2xl flex flex-col border-t-8 border-[#008b8b]">
-        <div class="bg-white p-6 flex items-center justify-between border-b border-gray-100">
+    <div class="medical-glass rounded-3xl overflow-hidden shadow-2xl flex flex-col border-t-8 border-[#008b8b]">
+        <div class="bg-white p-5 flex items-center justify-between border-b border-gray-100">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-[#008b8b]/10 rounded-full overflow-hidden flex items-center justify-center border-2 border-[#008b8b]/20">
                     <img src="dog_doctor.png" alt="Dog Doctor" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-[#1a365d]">Oleksandra's Assistant</h1>
-                    <p class="text-[11px] text-[#008b8b] uppercase tracking-widest font-bold">Healthcare & Nursing Mentor</p>
+                    <h1 class="text-lg font-bold tracking-tight text-[#1a365d]">Oleksandra's Assistant</h1>
+                    <p class="text-[10px] text-[#008b8b] uppercase tracking-widest font-black">Healthcare & Nursing Mentor</p>
                 </div>
             </div>
-            <div class="text-right hidden sm:block text-gray-400 text-[10px] font-medium">
-                <p>Ottawa, ON</p>
+            <div class="text-right hidden sm:block text-gray-400 text-[10px] font-bold">
+                <p>OTTAWA, ON</p>
             </div>
         </div>
 
-        <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-6 text-[15px]">
+        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-6 text-[15px] bg-white/50">
             <div class="bg-[#008b8b]/5 border border-[#008b8b]/10 rounded-2xl p-5 text-[#1a365d] shadow-sm">
                 Привіт, Oleksandra! 💙💛 I am your personal assistant. I can help you with <strong>Medical terminology, NCLEX prep, Canadian healthcare laws</strong>, or your shift schedules in Ottawa. How can I support your nursing journey today?
             </div>
         </div>
 
-        <div class="p-6 bg-white border-t border-gray-100 flex gap-3">
-            <input id="chat-input" type="text" placeholder="Ask me anything ..." 
-                class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 text-gray-700 focus:outline-none focus:border-[#008b8b] focus:ring-1 focus:ring-[#008b8b] transition-all">
-            <button onclick="sendMessage()" class="bg-[#008b8b] px-8 rounded-xl text-white font-bold hover:bg-[#007070] active:scale-95 shadow-lg shadow-[#008b8b]/20 transition-all uppercase tracking-wider">
-                Send
-            </button>
+        <div class="p-4 bg-white border-t border-gray-100">
+            <div class="relative flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-2 focus-within:border-[#008b8b] focus-within:ring-1 focus-within:ring-[#008b8b] transition-all">
+                <textarea id="chat-input" rows="1" placeholder="Ask me anything ..." 
+                    class="flex-1 bg-transparent px-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none leading-relaxed"></textarea>
+                
+                <button onclick="sendMessage()" class="bg-[#008b8b] p-3 rounded-xl text-white hover:bg-[#007070] active:scale-95 transition-all flex items-center justify-center mb-1 shadow-md">
+                    <i data-lucide="send-horizontal" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-[9px] text-gray-400 text-center mt-2 font-medium">Supporting Healthcare Education • 2026</p>
         </div>
     </div>
 
@@ -51,18 +73,36 @@
         const input = document.getElementById("chat-input");
         const chatBox = document.getElementById("chat-messages");
 
+        // Tự động giãn chiều cao textarea giống Gemini
+        input.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = (this.scrollHeight) + "px";
+        });
+
         async function sendMessage() {
             const msg = input.value.trim();
             if (!msg) return;
 
-            // User Message
-            chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-[#1a365d] text-white p-4 rounded-2xl rounded-tr-none max-w-[85%] shadow-md">${msg}</div></div>`;
+            // User Message (Hỗ trợ hiển thị xuống dòng bằng br)
+            chatBox.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-[#1a365d] text-white p-4 rounded-2xl rounded-tr-none max-w-[85%] shadow-md font-medium">
+                        ${msg.replace(/\n/g, '<br>')}
+                    </div>
+                </div>`;
+            
             input.value = "";
+            input.style.height = "52px"; // Reset chiều cao sau khi gửi
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Loading
+            // Loading state
             const loadingId = "loading-" + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="flex justify-start"><div class="bg-gray-100 p-4 rounded-2xl rounded-tl-none italic text-gray-500">Checking medical databases<span class="typing"></span></div></div>`;
+            chatBox.innerHTML += `
+                <div id="${loadingId}" class="flex justify-start">
+                    <div class="bg-gray-100 p-4 rounded-2xl rounded-tl-none italic text-gray-500 text-sm">
+                        Checking medical databases<span class="typing"></span>
+                    </div>
+                </div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
@@ -75,15 +115,26 @@
                 document.getElementById(loadingId).remove();
 
                 // AI Response
-                chatBox.innerHTML += `<div class="flex justify-start animate-in slide-in-from-left duration-300"><div class="bg-white border border-gray-200 p-5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-700 shadow-sm leading-relaxed">${data.reply}</div></div>`;
+                chatBox.innerHTML += `
+                    <div class="flex justify-start animate-in slide-in-from-left duration-300">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-700 shadow-sm leading-relaxed">
+                            ${data.reply}
+                        </div>
+                    </div>`;
             } catch (e) {
                 if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
-                chatBox.innerHTML += `<div class="text-red-500 text-center text-xs">Error connecting to the medical server.</div>`;
+                chatBox.innerHTML += `<div class="text-red-500 text-center text-xs font-bold py-2">Error connecting to the medical server.</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        input.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+        // Enter để gửi, Shift + Enter để xuống dòng
+        input.addEventListener("keydown", (e) => { 
+            if (e.key === "Enter" && !e.shiftKey) { 
+                e.preventDefault();
+                sendMessage(); 
+            } 
+        });
     </script>
 </body>
 </html>
